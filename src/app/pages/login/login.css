@@ -1,0 +1,180 @@
+/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #000;
+  color: #fff;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+}
+
+a{
+  text-decoration: none;
+color: black;
+}
+/* Logo */
+.logo-area {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.entrar{
+  text-decoration: none;
+  color: #000;
+}
+
+.logo-icon {
+  width: 70px;
+  height: 70px;
+  background: #ff8c2a;
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto 15px;
+}
+
+.logo-icon span {
+  color: #000;
+  font-size: 32px;
+}
+
+/* Título */
+.logo-area h1 {
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 4px;
+  font-size: 26px;
+}
+
+.logo-area p {
+  color: #9a9a9a;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+/* Card */
+.card {
+  background: linear-gradient(145deg, #111, #0a0a0a);
+  border: 1px solid rgba(255, 255, 255, 0.06); /* BORDA FINA */
+  border-radius: 14px;
+  padding: 25px;
+   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
+
+}
+
+/* Form */
+form {
+  display: flex;
+  flex-direction: column;
+   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+label {
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #ddd;
+}
+
+*/* INPUT CORRIGIDO */
+.card input {
+  width: 100%;
+  background-color: #0b0b0b;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 18px;
+
+  border: 1px solid #3a3a3a; /* cinza claro visível */
+  outline: none;
+ font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  box-shadow: none;
+}
+
+.card input:focus {
+  border: 1px solid rgba(255, 140, 42, 0.4) !important;
+  box-shadow: 0 0 0 1px rgba(255, 140, 42, 0.15);
+}
+
+/* Remove estilo branco do Chrome */
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #0b0b0b inset !important;
+  -webkit-text-fill-color: #fff !important;
+  
+}
+
+
+/* Focus */
+input:focus {
+  border: 1px solid #ff8c2a;
+  box-shadow: 0 0 0 1px rgba(255, 140, 42, 0.2);
+}
+
+/* Link */
+.forgot {
+  color: #ff8c2a;
+  font-size: 14px;
+  text-decoration: none;
+  margin-bottom: 20px;
+}
+
+/* Botão */
+button {
+  background: #ff8c2a;
+  color: #000000;
+  font-family: 'Inter',  sans-serif;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+/* Texto final */
+.signup {
+  text-align: center;
+  font-size: 14px;
+  color: #9a9a9a;
+}
+
+.signup span {
+  color: #ff8c2a;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* MOBILE */
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
+  }
+
+  .logo-area h1 {
+    font-size: 22px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+}

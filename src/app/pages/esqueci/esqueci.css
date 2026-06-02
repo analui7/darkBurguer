@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #000;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #fff;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: 520px;
+  padding: 20px;
+  text-align: center;
+}
+
+
+
+/* Voltar */
+.back {
+  width: fit-content;
+
+  background: #ff8c2a;
+  padding: 8px 18px;
+  border-radius: 14px;
+
+  margin-bottom: 60px;
+
+  margin-left: -10px; /* joga um pouco pra esquerda */
+}
+
+.back-link {
+  text-decoration: none;
+  color: #000;
+  font-weight: bold;
+}
+
+/* Logo */
+.logo-area {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.logo-icon {
+  width: 70px;
+  height: 70px;
+  background: #ff8c2a;
+  border-radius: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto 15px;
+}
+
+.logo-icon span {
+  color: #000;
+  font-size: 32px;
+}
+
+/* Título */
+.logo-area h1 {
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 2px;
+  font-size: 26px;
+  font-weight: bolder;
+}
+
+.logo-area p {
+  color: #9a9a9a;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+
+/* Título */
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #9a9a9a;
+  font-size: 14px;
+  margin-bottom: 35px;
+}
+
+/* Card */
+.card {
+  background: linear-gradient(145deg, #111, #0a0a0a);
+  border: 1px solid #1f1f1f;
+  border-radius: 14px;
+  padding: 25px;
+  text-align: left;
+}
+
+/* Label */
+label {
+  font-size: 14px;
+  color: #ddd;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Input */
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #2f2f2f;
+  background: #0b0b0b;
+  color: #fff;
+  margin-bottom: 20px;
+  outline: none;
+}
+
+input::placeholder {
+  color: #777;
+}
+
+/* Focus */
+input:focus {
+  border: 1px solid #ff8c2a;
+}
+
+/* Botão */
+button {
+  width: 100%;
+  background: #ff8c2a;
+  color: #000;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* MOBILE AJUSTE */
+@media (max-width: 480px) {
+  body {
+    align-items: flex-start;
+  }
+
+  .container {
+    margin-top: 40px;
+  }
+.back {
+    margin-bottom: 50px;
+  }
+}

@@ -1,3 +1,17 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+import { LoginComponent } from './pages/login/login';
+import { InicioComponent } from './pages/inicio/inicio';
+import { CadastroComponent } from './pages/cadastro/cadastro';
+import { EsqueciComponent } from './pages/esqueci/esqueci';
+import { CarrinhoComponent } from './pages/carrinho/carrinho';
+import { MinhaContaComponent } from './pages/minha-conta/minha-conta';
+
+export const routes: Routes = [
+  { path: '', component: LoginComponent },
+  { path: 'inicio', component: InicioComponent },
+  { path: 'cadastro', component: CadastroComponent },
+  { path: 'esqueci', component: EsqueciComponent },
+  { path: 'carrinho', component: CarrinhoComponent },
+  { path: 'minha-conta', component: MinhaContaComponent }
+];
