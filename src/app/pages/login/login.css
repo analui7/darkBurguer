@@ -8,36 +8,62 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+}
+
 body {
   background: #000;
   color: #fff;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-}
 
-/* Container */
-.container {
-  width: 100%;
-  max-width: 420px;
+  min-height: 100vh;
+
   padding: 20px;
 }
 
-a{
-  text-decoration: none;
-color: black;
+/* ==========================================
+   CONTAINER PRINCIPAL
+========================================== */
+
+.container {
+  width: 100%;
+  max-width: 420px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  margin: auto;
 }
-/* Logo */
+
+/* ==========================================
+   LINKS
+========================================== */
+
+a {
+  text-decoration: none;
+  color: black;
+}
+
+.entrar {
+  text-decoration: none;
+  color: #000;
+}
+
+/* ==========================================
+   LOGO
+========================================== */
+
 .logo-area {
   text-align: center;
   margin-bottom: 35px;
-}
-
-.entrar{
-  text-decoration: none;
-  color: #000;
 }
 
 .logo-icon {
@@ -58,7 +84,6 @@ color: black;
   font-size: 32px;
 }
 
-/* Título */
 .logo-area h1 {
   font-family: 'Oswald', sans-serif;
   letter-spacing: 4px;
@@ -71,22 +96,33 @@ color: black;
   margin-top: 6px;
 }
 
-/* Card */
+/* ==========================================
+   CARD
+========================================== */
+
 .card {
   background: linear-gradient(145deg, #111, #0a0a0a);
-  border: 1px solid rgba(255, 255, 255, 0.06); /* BORDA FINA */
-  border-radius: 14px;
-  padding: 25px;
-   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
 
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
+  border-radius: 14px;
+
+  padding: 25px;
+
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03);
+
+  width: 100%;
 }
 
-/* Form */
+/* ==========================================
+   FORM
+========================================== */
+
 form {
   display: flex;
   flex-direction: column;
-   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 label {
@@ -95,42 +131,42 @@ label {
   color: #ddd;
 }
 
-*/* INPUT CORRIGIDO */
 .card input {
   width: 100%;
   background-color: #0b0b0b;
   color: #fff;
-  font-family: 'Inter', sans-serif;
+
   border-radius: 10px;
+
   padding: 12px;
+
   margin-bottom: 18px;
 
-  border: 1px solid #3a3a3a; /* cinza claro visível */
+  border: 1px solid #3a3a3a;
+
   outline: none;
- font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  box-shadow: none;
+
+  font-family: 'Inter', sans-serif;
+
+  transition: 0.25s ease;
 }
 
 .card input:focus {
-  border: 1px solid rgba(255, 140, 42, 0.4) !important;
+  border: 1px solid rgba(255, 140, 42, 0.4);
   box-shadow: 0 0 0 1px rgba(255, 140, 42, 0.15);
 }
 
-/* Remove estilo branco do Chrome */
+/* Chrome Autofill */
+
 input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 1000px #0b0b0b inset !important;
   -webkit-text-fill-color: #fff !important;
-  
 }
 
+/* ==========================================
+   ESQUECI SENHA
+========================================== */
 
-/* Focus */
-input:focus {
-  border: 1px solid #ff8c2a;
-  box-shadow: 0 0 0 1px rgba(255, 140, 42, 0.2);
-}
-
-/* Link */
 .forgot {
   color: #ff8c2a;
   font-size: 14px;
@@ -138,20 +174,41 @@ input:focus {
   margin-bottom: 20px;
 }
 
-/* Botão */
+/* ==========================================
+   BOTÃO
+========================================== */
+
 button {
+  width: 100%;
+
   background: #ff8c2a;
-  color: #000000;
-  font-family: 'Inter',  sans-serif;
+
+  color: #000;
+
   border: none;
+
   padding: 14px;
+
   border-radius: 8px;
-  font-weight: bold;
+
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+
   cursor: pointer;
+
   margin-bottom: 15px;
+
+  transition: 0.2s ease;
 }
 
-/* Texto final */
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* ==========================================
+   TEXTO FINAL
+========================================== */
+
 .signup {
   text-align: center;
   font-size: 14px;
@@ -164,17 +221,70 @@ button {
   cursor: pointer;
 }
 
-/* MOBILE */
-@media (max-width: 480px) {
+/* ==========================================
+   TABLETS
+========================================== */
+
+@media (max-width: 768px) {
+  body {
+    padding: 24px;
+  }
+
   .container {
-    padding: 15px;
+    max-width: 430px;
+  }
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 480px) {
+  body {
+    padding: 16px;
+  }
+
+  .container {
+    max-width: 100%;
+  }
+
+  .logo-icon {
+    width: 65px;
+    height: 65px;
   }
 
   .logo-area h1 {
     font-size: 22px;
+    letter-spacing: 3px;
   }
 
   .card {
     padding: 20px;
   }
+
+  .card input {
+    padding: 14px;
+  }
+
+  button {
+    padding: 15px;
+  }
+}
+
+/* ==========================================
+   MONITORES GRANDES
+========================================== */
+
+@media (min-width: 1400px) {
+  .container {
+    transform: scale(1.05);
+  }
+}
+
+:host {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }

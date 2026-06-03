@@ -6,38 +6,56 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+}
+
 body {
   background: #000;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: #fff;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
+  min-height: 100vh;
 
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+
+  padding: 20px;
 }
 
-/* Container */
+/* ==================================
+   CONTAINER
+================================== */
+
 .container {
   width: 100%;
   max-width: 520px;
-  padding: 20px;
-  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+
+  margin: auto;
 }
 
+/* ==================================
+   BOTÃO VOLTAR
+================================== */
 
-
-/* Voltar */
 .back {
   width: fit-content;
 
   background: #ff8c2a;
+
   padding: 8px 18px;
+
   border-radius: 14px;
 
-  margin-bottom: 60px;
-
-  margin-left: -10px; /* joga um pouco pra esquerda */
+  margin-bottom: 50px;
 }
 
 .back-link {
@@ -46,7 +64,10 @@ body {
   font-weight: bold;
 }
 
-/* Logo */
+/* ==================================
+   LOGO
+================================== */
+
 .logo-area {
   text-align: center;
   margin-bottom: 35px;
@@ -55,7 +76,9 @@ body {
 .logo-icon {
   width: 70px;
   height: 70px;
+
   background: #ff8c2a;
+
   border-radius: 16px;
 
   display: flex;
@@ -70,12 +93,10 @@ body {
   font-size: 32px;
 }
 
-/* Título */
 .logo-area h1 {
-  font-family: 'Oswald', sans-serif;
-  letter-spacing: 2px;
   font-size: 26px;
-  font-weight: bolder;
+  font-weight: 700;
+  letter-spacing: 2px;
 }
 
 .logo-area p {
@@ -84,8 +105,10 @@ body {
   margin-top: 6px;
 }
 
+/* ==================================
+   TÍTULOS
+================================== */
 
-/* Título */
 h1 {
   font-size: 28px;
   font-weight: 700;
@@ -98,72 +121,167 @@ h1 {
   margin-bottom: 35px;
 }
 
-/* Card */
+/* ==================================
+   CARD
+================================== */
+
 .card {
+  width: 100%;
+
   background: linear-gradient(145deg, #111, #0a0a0a);
-  border: 1px solid #1f1f1f;
+
+  border: 1px solid rgba(255, 255, 255, 0.06);
+
   border-radius: 14px;
+
   padding: 25px;
+
   text-align: left;
+
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
 }
 
-/* Label */
+/* ==================================
+   FORM
+================================== */
+
 label {
-  font-size: 14px;
-  color: #ddd;
-  margin-bottom: 6px;
   display: block;
+
+  color: #ddd;
+
+  font-size: 14px;
+
+  margin-bottom: 6px;
 }
 
-/* Input */
 input {
   width: 100%;
+
   padding: 12px;
+
   border-radius: 10px;
+
   border: 1px solid #2f2f2f;
+
   background: #0b0b0b;
+
   color: #fff;
+
   margin-bottom: 20px;
+
   outline: none;
+
+  transition: 0.2s;
 }
 
 input::placeholder {
   color: #777;
 }
 
-/* Focus */
 input:focus {
-  border: 1px solid #ff8c2a;
+  border-color: #ff8c2a;
+  box-shadow: 0 0 0 1px rgba(255,140,42,0.15);
 }
 
-/* Botão */
+/* ==================================
+   BOTÃO
+================================== */
+
 button {
   width: 100%;
+
   background: #ff8c2a;
+
   color: #000;
+
   border: none;
+
   padding: 14px;
+
   border-radius: 10px;
-  font-weight: bold;
+
+  font-weight: 700;
+
   cursor: pointer;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  transition: 0.2s;
+
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
+  transition: 0.2s ease;
 }
 
 button:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
-/* MOBILE AJUSTE */
-@media (max-width: 480px) {
+/* ==================================
+   TABLET
+================================== */
+
+@media (max-width: 768px) {
   body {
-    align-items: flex-start;
+    padding: 24px;
   }
 
   .container {
-    margin-top: 40px;
+    max-width: 500px;
   }
-.back {
-    margin-bottom: 50px;
+}
+
+/* ==================================
+   MOBILE
+================================== */
+
+@media (max-width: 480px) {
+  body {
+    padding: 16px;
   }
+
+  .container {
+    max-width: 100%;
+  }
+
+  .back {
+    margin-bottom: 35px;
+  }
+
+  .logo-icon {
+    width: 65px;
+    height: 65px;
+  }
+
+  .logo-area h1 {
+    font-size: 22px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  input {
+    padding: 14px;
+  }
+
+  button {
+    padding: 15px;
+  }
+}
+
+/* ==================================
+   MONITORES GRANDES
+================================== */
+
+@media (min-width: 1400px) {
+  .container {
+    transform: scale(1.05);
+  }
+}
+
+:host {
+  width: 100%;
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

@@ -6,6 +6,22 @@
   box-sizing:border-box;
 }
 
+/* COMPONENTE ANGULAR */
+:host{
+  width:100%;
+  min-height:100vh;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+html,
+body{
+  width:100%;
+  min-height:100%;
+}
+
 body{
   background:#000;
   color:#fff;
@@ -21,19 +37,33 @@ body{
   padding:20px;
 }
 
-/* CONTAINER */
+/* =======================================
+   CONTAINER
+======================================= */
+
 .container{
   width:100%;
   max-width:450px;
+
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+
+  margin:auto;
 }
 
-/* VOLTAR */
+/* =======================================
+   VOLTAR
+======================================= */
+
 .back{
   display:flex;
   align-items:center;
   gap:6px;
 
-  margin-bottom:35px;
+  width:fit-content;
+
+  margin-bottom:40px;
 }
 
 .back .material-icons{
@@ -47,9 +77,18 @@ body{
 
   font-size:15px;
   font-weight:500;
+
+  transition:.2s;
 }
 
-/* LOGO */
+.back-link:hover{
+  color:#fff;
+}
+
+/* =======================================
+   LOGO
+======================================= */
+
 .logo-area{
   text-align:center;
   margin-bottom:28px;
@@ -75,12 +114,18 @@ body{
   font-size:42px;
 }
 
-/* TITULO */
-.logo-area h1{
+/* =======================================
+   TITULO
+======================================= */
+
+.logo-area h1,
+.tituloCriar{
   font-size:58px;
   font-weight:800;
 
   margin-bottom:10px;
+
+  line-height:1.1;
 }
 
 .subtitle{
@@ -88,18 +133,31 @@ body{
   font-size:16px;
 }
 
-/* CARD */
-.card{
-  background:linear-gradient(145deg,#171717,#111);
+/* =======================================
+   CARD
+======================================= */
 
-  border:1px solid #242424;
+.card{
+  background:linear-gradient(
+    145deg,
+    #171717,
+    #111
+  );
+
+  border:1px solid rgba(255,255,255,0.06);
 
   border-radius:16px;
 
   padding:32px;
+
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.03);
 }
 
-/* INPUTS */
+/* =======================================
+   INPUTS
+======================================= */
+
 .input-group{
   margin-bottom:24px;
 }
@@ -117,8 +175,6 @@ label{
 
 input{
   width:100%;
-
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 
   height:56px;
 
@@ -138,13 +194,7 @@ input{
 
   transition:0.2s;
 
-   outline: none;
-}
-
-input:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0 1000px #151515 inset !important;
-  -webkit-text-fill-color: #fff !important;
-  
+  font-family:'Inter', system-ui, sans-serif;
 }
 
 input::placeholder{
@@ -153,9 +203,22 @@ input::placeholder{
 
 input:focus{
   border-color:#ff932f;
+
+  box-shadow:
+    0 0 0 1px rgba(255,147,47,0.15);
 }
 
-/* BOTÃO */
+input:-webkit-autofill{
+  -webkit-box-shadow:
+    0 0 0 1000px #151515 inset !important;
+
+  -webkit-text-fill-color:#fff !important;
+}
+
+/* =======================================
+   BOTÃO
+======================================= */
+
 button{
   width:100%;
   height:58px;
@@ -168,43 +231,53 @@ button{
   color:#000;
 
   font-size:18px;
-  font-weight:bold;
+  font-weight:700;
 
   cursor:pointer;
-font-family: 'Inter', system-ui, sans-serif;
-  transition:0.7s;
+
+  font-family:'Inter', system-ui, sans-serif;
+
+  transition:.2s;
 }
 
 button:hover{
-  opacity:0.92;
-  border-color: #ff932f;
+  transform:translateY(-1px);
+  opacity:.95;
 }
 
-/* ========================= */
-/* MOBILE */
-/* ========================= */
+/* =======================================
+   TABLET
+======================================= */
 
-@media(max-width:480px){
+@media (max-width:768px){
 
   body{
-    align-items:flex-start;
-    padding:28px 16px;
+    padding:24px;
+  }
+
+  .container{
+    max-width:450px;
+  }
+}
+
+/* =======================================
+   MOBILE
+======================================= */
+
+@media (max-width:480px){
+
+  body{
+    padding:16px;
   }
 
   .container{
     max-width:100%;
   }
 
-  /* VOLTAR */
   .back{
-    margin-bottom:26px;
+    margin-bottom:28px;
   }
 
-  .back-link{
-    font-size:15px;
-  }
-
-  /* LOGO */
   .logo-icon{
     width:68px;
     height:68px;
@@ -218,21 +291,21 @@ button:hover{
     font-size:36px;
   }
 
-  .logo-area h1{
-    font-size:35px;
-  }
+  .logo-area h1,
   .tituloCriar{
-    font-size: 35px;
+    font-size:38px;
   }
 
   .subtitle{
     font-size:14px;
   }
 
-  /* CARD */
   .card{
-    padding:28px;
-    border-radius:14px;
+    padding:24px;
+  }
+
+  .input-group{
+    margin-bottom:18px;
   }
 
   input{
@@ -240,10 +313,19 @@ button:hover{
     font-size:15px;
   }
 
- 
-
   button{
     height:54px;
     font-size:15px;
+  }
+}
+
+/* =======================================
+   MONITORES GRANDES
+======================================= */
+
+@media (min-width:1400px){
+
+  .container{
+    transform:scale(1.03);
   }
 }
