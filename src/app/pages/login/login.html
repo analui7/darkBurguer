@@ -1,34 +1,50 @@
+<div class="container">
 
-
-  <div class="container">
-
-    <div class="logo-area">
-      <div class="logo-icon">
-        <span class="material-icons">local_fire_department</span>
-      </div>
-
-      <h1>DARK BURGER</h1>
-      <p>Premium Dark Kitchen</p>
+  <div class="logo-area">
+    <div class="logo-icon">
+      <span class="material-icons">local_fire_department</span>
     </div>
 
-    <div class="card">
-      <form id="loginForm">
+    <h1>DARK BURGER</h1>
+    <p>Premium Dark Kitchen</p>
+  </div>
 
-        <label>Email</label>
-        <input id="input" type="email" placeholder="seu@email.com">
+  <div class="card">
 
-        <label>Senha</label>
-        <input id="input" type="password" placeholder="••••••••">
+    <form (submit)="$event.preventDefault()">
 
-        <a  routerLink="/esqueci" class="forgot">Esqueci minha senha</a>
+      <label>Email</label>
+      <input
+        type="email"
+        placeholder="seu@email.com"
+        [(ngModel)]="email"
+        name="email">
 
-        <button type="button" class="entrar" routerLink="/inicio">Entrar</button>
-       
-        <p class="signup">
-          Não tem conta? <a routerLink="/cadastro"><span>Criar conta</span></a>
-        </p>
+      <label>Senha</label>
+      <input
+        type="password"
+        placeholder="••••••••"
+        [(ngModel)]="senha"
+        name="senha">
 
-      </form>
-    </div>
+      <a routerLink="/esqueci" class="forgot">
+        Esqueci minha senha
+      </a>
+
+      <button
+        type="button"
+        class="entrar"
+        (click)="login()">
+        Entrar
+      </button>
+
+      <p class="signup">
+        Não tem conta?
+        <a routerLink="/cadastro"><span>Criar conta</span></a>
+      </p>
+
+    </form>
 
   </div>
+
+</div>
