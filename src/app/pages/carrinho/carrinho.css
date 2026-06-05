@@ -257,9 +257,9 @@ body {
   border: none;
   border-radius: 14px;
 
-  background: var(--orange);
+  background-color:#f48116;
 
-  color: black;
+  color: white;
 
   font-size: 1.15rem;
   font-weight: 800;
@@ -272,7 +272,7 @@ body {
 }
 
 .checkout-btn:hover {
-  background: var(--orange-dark);
+  background-color: #ce6a0d;
 }
 
 /* RESPONSIVO */

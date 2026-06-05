@@ -1,7 +1,11 @@
-import { Component } from '@angular/core';
+
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { CarrinhoService } from '../../services/carrinho.service';
 import { FirebaseService } from '../../services/firebase.service';
+
 
 @Component({
   selector: 'app-inicio',
@@ -43,17 +47,40 @@ export class InicioComponent {
     { name: 'Cebola caramelizada', price: 4, checked: false }
   ];
 
-  constructor(private firebaseService: FirebaseService) {}
+constructor(
+  private firebaseService: FirebaseService,
+  private carrinhoService: CarrinhoService,
+  private router: Router
+) {}
 
-  ngOnInit() {
-    this.firebaseService.getProducts().subscribe((data: any) => {
-      console.table(data);
+ngOnInit() {
 
-      this.products = data;
-      this.filteredProducts = [...data];
+  this.firebaseService.getProducts().subscribe((data: any) => {
+
+    this.products = data || [];
+
+    this.products.sort((a: any, b: any) => {
+
+      if (a.category === 'lanches' && b.category !== 'lanches') {
+        return -1;
+      }
+
+      if (a.category !== 'lanches' && b.category === 'lanches') {
+        return 1;
+      }
+
+      return 0;
     });
-  }
 
+    this.filteredProducts = [...this.products];
+
+    this.selectedCategory = 'todos';
+
+    
+
+  });
+
+}
   filterCategory(category: string) {
     this.selectedCategory = category;
 
@@ -129,21 +156,25 @@ export class InicioComponent {
     return total * this.quantity;
   }
 
-  addToCart() {
+addToCart() {
 
-    const item = {
-      product: this.selectedProduct,
-      quantity: this.quantity,
-      observation: this.observation,
-      ingredients: this.ingredients,
-      extras: this.extras.filter(x => x.checked),
-      total: this.getTotalPrice()
-    };
+  const item = {
+    product: this.selectedProduct,
+    quantity: this.quantity,
+    observation: this.observation,
+    ingredients: this.ingredients.filter(i => i.checked),
+    extras: this.extras.filter(e => e.checked),
+    total: this.getTotalPrice()
+  };
 
-    console.log('Item carrinho:', item);
+  this.carrinhoService.adicionarItem(item);
 
-    this.closeModal();
-  }
+  console.log('Item adicionado:', item);
+
+  this.closeModal();
+
+  this.router.navigate(['/carrinho']);
+}
 
   logout() {
     localStorage.clear();
