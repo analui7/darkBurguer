@@ -683,3 +683,220 @@
   }
 
 }
+
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.product-modal{
+  width:95vw;
+  max-width:500px;
+
+  background:#141414;
+  color:#fff;
+
+  border:1px solid #2a2a2a;
+  border-radius:14px;
+
+  padding:20px;
+
+  position:relative;
+
+  max-height:90vh;
+  overflow-y:auto;
+
+  display:block !important;
+}
+/* =========================
+   MODAL PRODUTO
+========================= */
+
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.80);
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  padding:20px;
+
+  z-index:9999;
+}
+
+.product-modal{
+  width:100%;
+  max-width:420px;
+
+  max-height:90vh;
+  overflow-y:auto;
+
+  background:#141414;
+
+  border:1px solid #2a2a2a;
+  border-radius:14px;
+
+  color:#fff;
+
+  padding:20px;
+
+  position:relative;
+}
+
+.close-modal{
+  position:absolute;
+  top:15px;
+  right:15px;
+
+  background:none;
+  border:none;
+
+  color:#fff;
+
+  font-size:22px;
+
+  cursor:pointer;
+}
+
+.modal-description{
+  color:#a7a7a7;
+  line-height:1.6;
+  margin-top:10px;
+}
+
+.modal-price{
+  color:#ff962b;
+  font-size:34px;
+  font-weight:800;
+  margin:20px 0;
+}
+
+.subtitle{
+  display:block;
+  color:#8f8f8f;
+  margin-bottom:12px;
+}
+
+.option{
+  width:100%;
+  margin-bottom:10px;
+}
+
+.option label{
+  width:100%;
+
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  padding:12px;
+
+  border:1px solid #2f2f2f;
+  border-radius:8px;
+}
+
+.extra{
+  width:100%;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:12px;
+
+  margin-bottom:10px;
+
+  border:1px solid #2f2f2f;
+  border-radius:8px;
+}
+
+.extra label{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.extra span{
+  color:#ff962b;
+  font-weight:700;
+}
+
+.observation{
+  width:100%;
+  min-height:90px;
+
+  margin-top:10px;
+
+  background:#1e1e1e;
+
+  border:1px solid #303030;
+  border-radius:10px;
+
+  color:#fff;
+
+  padding:12px;
+
+  resize:none;
+}
+
+.quantity{
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  margin-top:15px;
+}
+
+.quantity button{
+  width:36px;
+  height:36px;
+
+  border:none;
+  border-radius:8px;
+
+  background:#2c2c2c;
+  color:#fff;
+
+  cursor:pointer;
+}
+
+.quantity span{
+  font-size:18px;
+  font-weight:700;
+}
+
+.btn-cart{
+  width:100%;
+
+  margin-top:25px;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:15px;
+
+  border:none;
+  border-radius:10px;
+
+  background:#ff962b;
+  color:#111;
+
+  font-weight:800;
+
+  cursor:pointer;
+}
+
+.product-modal hr{
+  border:none;
+  height:1px;
+  background:#2a2a2a;
+  margin:20px 0;
+}

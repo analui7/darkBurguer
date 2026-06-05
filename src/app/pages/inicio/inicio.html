@@ -216,3 +216,127 @@
   </button>
 
 </aside>
+<!-- MODAL PRODUTO -->
+<div
+  *ngIf="showModal"
+  class="modal-overlay"
+  (click)="closeModal()">
+
+  <div
+    class="product-modal"
+    (click)="$event.stopPropagation()">
+
+    <button
+      class="close-modal"
+      (click)="closeModal()">
+      ✕
+    </button>
+
+    <h2>{{ selectedProduct?.name }}</h2>
+
+    <p class="modal-description">
+      {{ selectedProduct?.description }}
+    </p>
+
+    <div class="modal-price">
+      R$ {{ selectedProduct?.price }}
+    </div>
+
+    <hr>
+
+    <h3>Ingredientes</h3>
+
+    <small class="subtitle">
+      Remova os ingredientes que não deseja
+    </small>
+
+    <div
+      class="option"
+      *ngFor="let ingredient of ingredients">
+
+      <label>
+
+        <input
+          type="checkbox"
+          [(ngModel)]="ingredient.checked">
+
+        {{ ingredient.name }}
+
+      </label>
+
+    </div>
+
+    <hr>
+
+    <h3>Adicionais</h3>
+
+    <div
+      class="extra"
+      *ngFor="let extra of extras">
+
+      <label>
+
+        <input
+          type="checkbox"
+          [(ngModel)]="extra.checked">
+
+        {{ extra.name }}
+
+      </label>
+
+      <span>
+        + R$ {{ extra.price.toFixed(2) }}
+      </span>
+
+    </div>
+
+    <hr>
+
+    <h3>Observações</h3>
+
+    <textarea
+      class="observation"
+      rows="4"
+      [(ngModel)]="observation"
+      placeholder="Ex: sem cebola, carne ao ponto, molho separado...">
+    </textarea>
+
+    <hr>
+
+    <h3>Quantidade</h3>
+
+    <div class="quantity">
+
+      <button
+        type="button"
+        (click)="decreaseQuantity()">
+        -
+      </button>
+
+      <span>
+        {{ quantity }}
+      </span>
+
+      <button
+        type="button"
+        (click)="increaseQuantity()">
+        +
+      </button>
+
+    </div>
+
+    <button
+      class="btn-cart"
+      (click)="addToCart()">
+
+      <span>Adicionar ao carrinho</span>
+
+      <span>
+        R$ {{ getTotalPrice().toFixed(2) }}
+      </span>
+
+    </button>
+
+  </div>
+
+</div>

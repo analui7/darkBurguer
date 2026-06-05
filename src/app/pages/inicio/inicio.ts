@@ -1,19 +1,47 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { FirebaseService } from '../../services/firebase.service';
 
 @Component({
   selector: 'app-inicio',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
   templateUrl: './inicio.html',
   styleUrl: './inicio.css'
 })
 export class InicioComponent {
 
+  showModal = false;
+
   products: any[] = [];
   filteredProducts: any[] = [];
   selectedCategory: string = 'todos';
+
+  selectedProduct: any = null;
+
+  quantity = 1;
+
+  observation = '';
+
+  ingredients = [
+    { name: 'Queijo cheddar', checked: true },
+    { name: 'Bacon', checked: true },
+    { name: 'Alface', checked: true },
+    { name: 'Tomate', checked: true },
+    { name: 'Cebola roxa', checked: true },
+    { name: 'Molho especial', checked: true }
+  ];
+
+  extras = [
+    { name: 'Queijo cheddar extra', price: 5, checked: false },
+    { name: 'Bacon extra', price: 8, checked: false },
+    { name: 'Ovo', price: 3, checked: false },
+    { name: 'Cebola caramelizada', price: 4, checked: false }
+  ];
 
   constructor(private firebaseService: FirebaseService) {}
 
@@ -60,18 +88,66 @@ export class InicioComponent {
   }
 
   openProduct(item: any) {
-    console.log('Produto selecionado:', item);
 
-    // Futuramente:
-    // this.router.navigate(['/produto', item.id]);
+    this.selectedProduct = item;
+
+    this.quantity = 1;
+
+    this.observation = '';
+
+    this.extras.forEach(extra => {
+      extra.checked = false;
+    });
+
+    this.showModal = true;
+  }
+
+  closeModal() {
+    this.showModal = false;
+  }
+
+  increaseQuantity() {
+    this.quantity++;
+  }
+
+  decreaseQuantity() {
+    if (this.quantity > 1) {
+      this.quantity--;
+    }
+  }
+
+  getTotalPrice(): number {
+
+    let total = Number(this.selectedProduct?.price || 0);
+
+    this.extras.forEach(extra => {
+      if (extra.checked) {
+        total += extra.price;
+      }
+    });
+
+    return total * this.quantity;
+  }
+
+  addToCart() {
+
+    const item = {
+      product: this.selectedProduct,
+      quantity: this.quantity,
+      observation: this.observation,
+      ingredients: this.ingredients,
+      extras: this.extras.filter(x => x.checked),
+      total: this.getTotalPrice()
+    };
+
+    console.log('Item carrinho:', item);
+
+    this.closeModal();
   }
 
   logout() {
     localStorage.clear();
 
     console.log('Usuário deslogado');
-
-    // Futuramente:
-    // this.router.navigate(['/login']);
   }
 }
