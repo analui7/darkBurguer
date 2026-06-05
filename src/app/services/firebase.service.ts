@@ -7,6 +7,12 @@ import {
   sendPasswordResetEmail
 } from 'firebase/auth';
 
+import { 
+  Firestore,
+  collection,
+  collectionData
+} from '@angular/fire/firestore';
+
 import { firebaseApp } from '../firebase';
 
 @Injectable({
@@ -15,6 +21,8 @@ import { firebaseApp } from '../firebase';
 export class FirebaseService {
 
   private auth = getAuth(firebaseApp);
+
+  constructor(private firestore: Firestore) {}
 
   // 🔐 LOGIN
   login(email: string, password: string) {
@@ -36,8 +44,14 @@ export class FirebaseService {
     return sendPasswordResetEmail(this.auth, email);
   }
 
-  // 👤 PEGAR USUÁRIO ATUAL
+  // 👤 USUÁRIO ATUAL
   getCurrentUser() {
     return this.auth.currentUser;
+  }
+
+  // 🍔 PRODUTOS (FIRESTORE)
+  getProducts() {
+    const ref = collection(this.firestore, 'products');
+    return collectionData(ref, { idField: 'id' });
   }
 }
