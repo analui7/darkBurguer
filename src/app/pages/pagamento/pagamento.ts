@@ -15,16 +15,16 @@ import { PedidoService } from '../../services/pedido.service';
   styleUrl: './pagamento.css'
 })
 export class PagamentoComponent {
-  
+
   metodoSelecionado: string = 'pix';
   dadosCartao = { numero: '', nome: '', validade: '', cvv: '' };
   dadosDinheiro = { trocoPara: '' };
 
   constructor(
-    public pedidoService: PedidoService, 
+    public pedidoService: PedidoService,
     private router: Router,
     private location: Location // Injetado o Location para fazer o botão do HTML funcionar
-  ) {}
+  ) { }
 
   /**
    * Resolve o erro TS2339 do HTML!
@@ -38,18 +38,19 @@ export class PagamentoComponent {
     try {
       const infoPagamento = {
         metodo: this.metodoSelecionado,
-        detalhes: this.metodoSelecionado === 'credito' ? this.dadosCartao : 
-                  this.metodoSelecionado === 'dinheiro' ? this.dadosDinheiro : null
+        detalhes: this.metodoSelecionado === 'credito' ? this.dadosCartao :
+          this.metodoSelecionado === 'dinheiro' ? this.dadosDinheiro : null
       };
 
       // Salva no Firestore de verdade e pega o ID gerado
       const idDoDocumento = await this.pedidoService.salvarPedidoNoFirestore(infoPagamento);
-      
+
       // Redireciona para a tela de sucesso levando os dados reais
-      this.router.navigate(['/pedido-confirmado'], {
-        state: { 
+      this.router.navigate(['/finalizar-pedido'], {
+        state: {
           idPedido: idDoDocumento,
-          endereco: this.pedidoService.getEndereco()
+          endereco: this.pedidoService.getEndereco(),
+          pagamento: infoPagamento
         }
       });
 

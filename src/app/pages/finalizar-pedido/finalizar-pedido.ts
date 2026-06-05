@@ -13,21 +13,21 @@ import { PedidoService } from '../../services/pedido.service';
   styleUrl: './finalizar-pedido.css'
 })
 export class FinalizarPedidoComponent implements OnInit {
-  
+
   // Variáveis locais que o HTML vai renderizar
   endereco = { rua: 'Carregando...', numero: '', bairro: '' };
   enderecoEdicao = { rua: '', numero: '', bairro: '' };
   observacoesPedido: string = '';
-  
+
   itensPedido: any[] = [];
   subtotal: number = 0;
   taxaEntrega: number = 0;
 
   constructor(
-    private pedidoService: PedidoService, 
+    private pedidoService: PedidoService,
     private router: Router,
     private location: Location
-  ) {}
+  ) { }
 
   async ngOnInit() {
     // Puxa os dados reais do serviço
@@ -43,8 +43,8 @@ export class FinalizarPedidoComponent implements OnInit {
     }
   }
 
-  voltar() { 
-    this.location.back(); 
+  voltar() {
+    this.location.back();
   }
 
   abrirModalEndereco() {
@@ -65,9 +65,12 @@ export class FinalizarPedidoComponent implements OnInit {
   }
 
   avancarParaPagamento() {
-    this.pedidoService.setPagamento({
-      // Passa um estado inicial de pagamento para a próxima tela se necessário
+
+    this.router.navigate(['/pedido-confirmado'], {
+      state: {
+        endereco: this.endereco
+      }
     });
-    this.router.navigate(['/pagamento']);
+
   }
 }
