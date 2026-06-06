@@ -1,13 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FirebaseService } from '../../services/firebase.service';
 import { PedidoService } from '../../services/pedido.service';
 
-// 🆕 Importações oficiais e reativas do Angular Fire
-import { Firestore, collection, query, where, orderBy, collectionData } from '@angular/fire/firestore';
-import { Auth, authState } from '@angular/fire/auth'; 
+import { onAuthStateChanged, Auth } from '@angular/fire/auth';
+import { doc, onSnapshot, Firestore } from '@angular/fire/firestore';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -19,8 +18,7 @@ import { Subscription } from 'rxjs';
 })
 export class MinhaContaComponent implements OnInit, OnDestroy {
   
-  // O HTML vai iniciar com 'Carregando...' até o Firebase responder
-  usuario: any = { nome: 'Usuário', email: 'Carregando...' };
+  usuario: any = { nome: 'Carregando...', email: 'Carregando...' };
   endereco: any = { rua: 'Rua das Flores', numero: '123', bairro: 'Centro' };
   pedidos: any[] = [];
 
@@ -29,26 +27,26 @@ export class MinhaContaComponent implements OnInit, OnDestroy {
   tempUsuario: any = {};
   tempEndereco: any = {};
 
-  // Inscrições para evitar vazamento de memória
-  private authSubscription: Subscription | null = null;
   private pedidosSubscription: Subscription | null = null;
+  private unsubscribeProfile: any = null;
 
   constructor(
     private firebaseService: FirebaseService,
     private pedidoService: PedidoService, 
-    private firestore: Firestore,         
-    private auth: Auth, // 🆕 Injetando o Auth reativo do Angular Fire
-    private router: Router
+    private auth: Auth,
+    private firestore: Firestore,
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.carregarEnderecoLocal();
-    this.escutarEstadoDoLogin();
+    this.escutarLoginEPerfil();
   }
 
   ngOnDestroy() {
-    if (this.authSubscription) this.authSubscription.unsubscribe();
     if (this.pedidosSubscription) this.pedidosSubscription.unsubscribe();
+    if (this.unsubscribeProfile) this.unsubscribeProfile();
   }
 
   carregarEnderecoLocal() {
@@ -58,77 +56,78 @@ export class MinhaContaComponent implements OnInit, OnDestroy {
     }
   }
 
-  // 🔐 1. ESCUTA SE O USUÁRIO ESTÁ LOGADO (REATIVO)
-  escutarEstadoDoLogin() {
-    console.log('🔄 [Minha Conta] Iniciando escuta do estado de login...');
-    this.authSubscription = authState(this.auth).subscribe({
-      next: async (user) => {
-        if (user) {
-          console.log('✅ [Minha Conta] Usuário detectado:', user.uid, user.email);
-          
-          this.usuario.email = user.email || 'Sem e-mail';
-          
-          try {
-            // Busca perfil no Firestore para garantir dados reais
-            const perfil: any = await this.firebaseService.buscarPerfilUsuario(user.uid);
-            console.log('👤 [Minha Conta] Perfil retornado do Firestore:', perfil);
-            
-            if (perfil) {
-              // ATUALIZAÇÃO COMPLETA: Nome e e-mail vindos do banco
-              this.usuario = {
-                nome: perfil['nome'] || user.displayName || 'Cliente',
-                email: perfil['email'] || user.email || 'Sem e-mail'
-              };
-              
-              if (perfil['endereco']) {
-                this.endereco = perfil['endereco'];
-              }
-              console.log('✅ [Minha Conta] Dados do usuário atualizados:', this.usuario);
-            } else {
-              console.warn('⚠️ [Minha Conta] Perfil não encontrado no Firestore para o UID:', user.uid);
-              // Fallback se não existir documento no Firestore
-              this.usuario = {
-                nome: user.displayName || 'Cliente',
-                email: user.email || 'Sem e-mail'
-              };
-            }
-          } catch (e) {
-            console.error('❌ [Minha Conta] Erro ao buscar perfil:', e);
-          }
+  // 🔐 1. ESCUTA LOGIN E PERFIL EM TEMPO REAL
+  escutarLoginEPerfil() {
+    console.log('🔄 [Minha Conta] Iniciando escuta direta do Auth...');
+    
+    onAuthStateChanged(this.auth, (user) => {
+      if (user) {
+        console.log('✅ [Minha Conta] Usuário Autenticado:', user.uid);
+        
+        // Atualiza e-mail imediatamente
+        this.usuario.email = user.email || 'Sem e-mail';
+        this.usuario.nome = user.displayName || 'Cliente';
 
-          this.buscarPedidosDoBanco(user.uid);
-        } else {
-          console.warn('⚠️ [Minha Conta] Nenhum usuário logado no Firebase Auth.');
-          this.usuario.email = 'Desconectado';
-          this.usuario.nome = 'Visitante';
-          this.pedidos = [];
-        }
-      },
-      error: (err) => console.error('❌ [Minha Conta] Erro no AuthState:', err)
+        // Escuta o perfil no Firestore em tempo real
+        this.escutarPerfilFirestore(user.uid);
+        
+        // Busca os pedidos
+        this.buscarPedidosDoBanco(user.uid);
+      } else {
+        console.warn('⚠️ [Minha Conta] Nenhum usuário logado.');
+        this.usuario.nome = 'Visitante';
+        this.usuario.email = 'Desconectado';
+        this.pedidos = [];
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  // 🍔 2. BUSCA OS PEDIDOS USANDO O SERVIÇO CENTRALIZADO
+  private escutarPerfilFirestore(uid: string) {
+    if (this.unsubscribeProfile) this.unsubscribeProfile();
+
+    const docRef = doc(this.firestore, `usuarios/${uid}`);
+    this.unsubscribeProfile = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const perfil = docSnap.data();
+        console.log('👤 [Minha Conta] Dados do Perfil Firestore:', perfil);
+        
+        this.usuario.nome = perfil['nome'] || this.usuario.nome;
+        if (perfil['endereco']) {
+          this.endereco = perfil['endereco'];
+        }
+      } else {
+        console.warn('⚠️ [Minha Conta] Documento de perfil não existe no Firestore.');
+      }
+      this.cdr.detectChanges();
+    }, (error) => {
+      console.error('❌ [Minha Conta] Erro ao ouvir perfil:', error);
+    });
+  }
+
+  // 🍔 2. BUSCA OS PEDIDOS
   private buscarPedidosDoBanco(uid: string) {
-    console.log('🔎 [Minha Conta] Buscando pedidos no Firestore para o UID:', uid);
+    console.log('🔎 [Minha Conta] Solicitando pedidos para UID:', uid);
 
     if (this.pedidosSubscription) this.pedidosSubscription.unsubscribe();
 
-    // Usando o método centralizado do FirebaseService para garantir que a query seja a mesma
-    this.pedidosSubscription = this.firebaseService.buscarPedidosUsuario().subscribe({
+    this.pedidosSubscription = this.firebaseService.buscarPedidosUsuario(uid).subscribe({
       next: (dados: any[]) => {
-        console.log('📦 [Minha Conta] Pedidos recebidos do Firestore:', dados);
+        console.log('📦 [Minha Conta] Pedidos brutos do Firestore:', dados);
 
-        this.pedidos = dados.map(pedido => {
+        const listaMapeada = dados.map(pedido => {
           let dataFormatada = 'Recente';
+          let timestamp = 0;
           
           if (pedido.dataCriacao) {
             try {
               const t = pedido.dataCriacao;
-              const dateObj = t.seconds ? new Date(t.seconds * 1000) : new Date(t);
+              // Firestore Timestamp vs JS Date
+              const dateObj = t.seconds ? new Date(t.seconds * 1000) : (t instanceof Date ? t : new Date(t));
               dataFormatada = dateObj.toLocaleDateString('pt-BR');
+              timestamp = dateObj.getTime();
             } catch (e) {
-              dataFormatada = 'Recente';
+              console.warn('Erro ao formatar data do pedido:', e);
             }
           }
 
@@ -140,13 +139,18 @@ export class MinhaContaComponent implements OnInit, OnDestroy {
             status: statusRaw,
             estaEmAndamento: !isEntregue,
             data: dataFormatada,
-            total: pedido.valores?.total ? Number(pedido.valores.total) : (pedido.total ? Number(pedido.total) : 0),
-            totalItens: pedido.itens ? pedido.itens.length : (pedido.totalItens ? Number(pedido.totalItens) : 1)
+            timestamp: timestamp,
+            total: pedido.valores?.total || pedido.total || 0,
+            totalItens: pedido.itens ? pedido.itens.length : (pedido.totalItens || 1)
           };
         });
+
+        this.pedidos = listaMapeada.sort((a, b) => b.timestamp - a.timestamp);
+        console.log('📊 [Minha Conta] Pedidos processados:', this.pedidos);
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('❌ [Minha Conta] Erro ao listar pedidos do Firebase:', err);
+        console.error('❌ [Minha Conta] Erro na busca de pedidos:', err);
       }
     });
   }
@@ -157,14 +161,10 @@ export class MinhaContaComponent implements OnInit, OnDestroy {
   async salvarDadosPessoais() { 
     if (!this.tempUsuario.nome.trim()) return; 
     
-    this.usuario.nome = this.tempUsuario.nome; 
-    
     const user = this.auth.currentUser;
     if (user) {
-      await this.firebaseService.salvarPerfilUsuario(user.uid, { nome: this.usuario.nome });
+      await this.firebaseService.salvarPerfilUsuario(user.uid, { nome: this.tempUsuario.nome });
     }
-    
-    localStorage.setItem('usuario', JSON.stringify({ nome: this.usuario.nome })); 
     this.showModalDados = false; 
   }
 
@@ -173,14 +173,10 @@ export class MinhaContaComponent implements OnInit, OnDestroy {
   async salvarEndereco() { 
     if (!this.tempEndereco.rua.trim() || !this.tempEndereco.numero.trim()) return; 
     
-    this.endereco = { ...this.tempEndereco }; 
-    
     const user = this.auth.currentUser;
     if (user) {
-      await this.firebaseService.salvarPerfilUsuario(user.uid, { endereco: this.endereco });
+      await this.firebaseService.salvarPerfilUsuario(user.uid, { endereco: this.tempEndereco });
     }
-
-    localStorage.setItem('endereco_entrega', JSON.stringify(this.endereco)); 
     this.showModalEndereco = false; 
   }
   

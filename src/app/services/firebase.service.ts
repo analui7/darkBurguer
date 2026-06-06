@@ -79,15 +79,15 @@ export class FirebaseService {
   }
 
   // 📜 BUSCAR PEDIDOS DO USUÁRIO LOGADO
-  buscarPedidosUsuario(): Observable<any[]> {
-    const user = this.getCurrentUser();
-    const uid = user ? user.uid : 'anonimo';
-
+  buscarPedidosUsuario(uid: string): Observable<any[]> {
+    console.log('📡 [FirebaseService] Iniciando busca de pedidos para UID:', uid);
     const ref = collection(this.firestore, 'pedidos');
+    
+    // Simplificamos a query removendo o orderBy temporariamente
+    // Isso evita erros de "Index missing" que fazem a query retornar vazio silenciosamente
     const q = query(
       ref, 
-      where('uidUsuario', '==', uid),
-      orderBy('dataCriacao', 'desc')
+      where('uidUsuario', '==', uid)
     );
 
     return collectionData(q, { idField: 'id' }) as Observable<any[]>;
