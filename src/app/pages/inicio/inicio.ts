@@ -1,34 +1,33 @@
-
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { CarrinhoService } from '../../services/carrinho.service';
 import { FirebaseService } from '../../services/firebase.service';
-
 
 @Component({
   selector: 'app-inicio',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    RouterModule
   ],
   templateUrl: './inicio.html',
   styleUrl: './inicio.css'
 })
-export class InicioComponent {
+export class InicioComponent implements OnInit {
 
   showModal = false;
+  isSidebarOpen = false; // Controla abertura da sidebar igual à imagem
 
   products: any[] = [];
   filteredProducts: any[] = [];
   selectedCategory: string = 'todos';
 
   selectedProduct: any = null;
-
   quantity = 1;
-
   observation = '';
 
   ingredients = [
@@ -47,40 +46,33 @@ export class InicioComponent {
     { name: 'Cebola caramelizada', price: 4, checked: false }
   ];
 
-constructor(
-  private firebaseService: FirebaseService,
-  private carrinhoService: CarrinhoService,
-  private router: Router
-) {}
+  constructor(
+    private firebaseService: FirebaseService,
+    private carrinhoService: CarrinhoService,
+    private router: Router
+  ) {}
 
-ngOnInit() {
+  ngOnInit() {
+    this.firebaseService.getProducts().subscribe((data: any) => {
+      this.products = data || [];
 
-  this.firebaseService.getProducts().subscribe((data: any) => {
+      // Organiza para os lanches virem primeiro por padrão
+      this.products.sort((a: any, b: any) => {
+        if (a.category === 'lanches' && b.category !== 'lanches') return -1;
+        if (a.category !== 'lanches' && b.category === 'lanches') return 1;
+        return 0;
+      });
 
-    this.products = data || [];
-
-    this.products.sort((a: any, b: any) => {
-
-      if (a.category === 'lanches' && b.category !== 'lanches') {
-        return -1;
-      }
-
-      if (a.category !== 'lanches' && b.category === 'lanches') {
-        return 1;
-      }
-
-      return 0;
+      // CORREÇÃO: Inicializa exibindo os produtos na tela diretamente
+      this.filteredProducts = [...this.products];
+      this.selectedCategory = 'todos';
     });
+  }
 
-    this.filteredProducts = [...this.products];
+  toggleSidebar(status: boolean) {
+    this.isSidebarOpen = status;
+  }
 
-    this.selectedCategory = 'todos';
-
-    
-
-  });
-
-}
   filterCategory(category: string) {
     this.selectedCategory = category;
 
@@ -115,17 +107,10 @@ ngOnInit() {
   }
 
   openProduct(item: any) {
-
     this.selectedProduct = item;
-
     this.quantity = 1;
-
     this.observation = '';
-
-    this.extras.forEach(extra => {
-      extra.checked = false;
-    });
-
+    this.extras.forEach(extra => extra.checked = false);
     this.showModal = true;
   }
 
@@ -144,41 +129,39 @@ ngOnInit() {
   }
 
   getTotalPrice(): number {
-
     let total = Number(this.selectedProduct?.price || 0);
-
     this.extras.forEach(extra => {
       if (extra.checked) {
         total += extra.price;
       }
     });
-
     return total * this.quantity;
   }
 
-addToCart() {
+  addToCart() {
+    const item = {
+      product: this.selectedProduct,
+      quantity: this.quantity,
+      observation: this.observation,
+      ingredients: this.ingredients.filter(i => i.checked),
+      extras: this.extras.filter(e => e.checked),
+      total: this.getTotalPrice()
+    };
 
-  const item = {
-    product: this.selectedProduct,
-    quantity: this.quantity,
-    observation: this.observation,
-    ingredients: this.ingredients.filter(i => i.checked),
-    extras: this.extras.filter(e => e.checked),
-    total: this.getTotalPrice()
-  };
+    this.carrinhoService.adicionarItem(item);
+    console.log('Item adicionado:', item);
+    this.closeModal();
+    this.router.navigate(['/carrinho']);
+  }
 
-  this.carrinhoService.adicionarItem(item);
-
-  console.log('Item adicionado:', item);
-
-  this.closeModal();
-
-  this.router.navigate(['/carrinho']);
-}
-
-  logout() {
+logout() {
+    // 1. Limpa os dados de sessão salvos no navegador
     localStorage.clear();
+    sessionStorage.clear();
 
-    console.log('Usuário deslogado');
+    console.log('Usuário deslogado. Redirecionando para a raiz...');
+
+    // 2. Redireciona para a rota raiz vacia (onde está o seu LoginComponent)
+    this.router.navigate(['/']);
   }
 }

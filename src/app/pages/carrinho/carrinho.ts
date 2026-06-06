@@ -24,6 +24,9 @@ ngOnInit() {
 
   console.log('Itens carrinho:', this.itens);
 }
+voltar() {
+    this.router.navigate(['/inicio']);
+  }
 
   remover(index: number) {
     this.carrinhoService.removerItem(index);

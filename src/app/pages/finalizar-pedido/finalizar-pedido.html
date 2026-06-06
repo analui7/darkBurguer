@@ -69,10 +69,8 @@
         <span class="total-label">Total</span>
         <span class="total-price">R$ {{ (subtotal + taxaEntrega) | number:'1.2-2' }}</span>
       </div>
-      
-      <button type="button" class="submit-order-button" (click)="avancarParaPagamento()">
-        Finalizar Pedido
-      </button>
+
+      <button   class="submit-order-button"  (click)="finalizarPedido()">Finalizar Pedido</button>
     </div>
   </footer>
 </main>
