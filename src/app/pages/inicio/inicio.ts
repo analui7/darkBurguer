@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CarrinhoService } from '../../services/carrinho.service';
 import { FirebaseService } from '../../services/firebase.service';
+import { collection, onSnapshot, Firestore, query } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-inicio',
@@ -17,10 +17,10 @@ import { FirebaseService } from '../../services/firebase.service';
   templateUrl: './inicio.html',
   styleUrl: './inicio.css'
 })
-export class InicioComponent implements OnInit {
+export class InicioComponent implements OnInit, OnDestroy {
 
   showModal = false;
-  isSidebarOpen = false; // Controla abertura da sidebar igual à imagem
+  isSidebarOpen = false; 
 
   products: any[] = [];
   filteredProducts: any[] = [];
@@ -29,6 +29,8 @@ export class InicioComponent implements OnInit {
   selectedProduct: any = null;
   quantity = 1;
   observation = '';
+
+  private unsubscribeProducts: any = null;
 
   ingredients = [
     { name: 'Queijo cheddar', checked: true },
@@ -49,23 +51,49 @@ export class InicioComponent implements OnInit {
   constructor(
     private firebaseService: FirebaseService,
     private carrinhoService: CarrinhoService,
-    private router: Router
+    private firestore: Firestore,
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    this.firebaseService.getProducts().subscribe((data: any) => {
-      this.products = data || [];
+    this.carregarProdutosEmTempoReal();
+  }
 
-      // Organiza para os lanches virem primeiro por padrão
+  ngOnDestroy() {
+    if (this.unsubscribeProducts) {
+      this.unsubscribeProducts();
+    }
+  }
+
+  private carregarProdutosEmTempoReal() {
+    console.log('📡 [Início] Iniciando escuta de produtos...');
+    const ref = collection(this.firestore, 'products');
+    
+    this.unsubscribeProducts = onSnapshot(ref, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      console.log('🍔 [Início] Produtos recebidos:', data.length);
+
+      this.products = data;
+
+      // Organiza para os lanches virem primeiro
       this.products.sort((a: any, b: any) => {
         if (a.category === 'lanches' && b.category !== 'lanches') return -1;
         if (a.category !== 'lanches' && b.category === 'lanches') return 1;
         return 0;
       });
 
-      // CORREÇÃO: Inicializa exibindo os produtos na tela diretamente
+      // ✅ ATUALIZAÇÃO IMEDIATA: Preenche a lista da tela e força renderização
       this.filteredProducts = [...this.products];
       this.selectedCategory = 'todos';
+      
+      this.cdr.detectChanges(); 
+    }, (error) => {
+      console.error('❌ [Início] Erro ao carregar produtos:', error);
     });
   }
 

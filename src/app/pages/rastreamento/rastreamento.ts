@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Firestore, doc, getDoc, onSnapshot, Unsubscribe } from '@angular/fire/firestore';
+import { Firestore, doc, onSnapshot, Unsubscribe } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-rastreamento',
@@ -19,7 +19,7 @@ export class RastreamentoComponent implements OnInit, OnDestroy {
   pedido: any = {
     id: '',
     tempoEstimado: 35,
-    endereco: { rua: 'Carregando...', bairro: '' },
+    endereco: { rua: 'Carregando...', bairro: '', cidade: '', estado: '', cep: '' },
     itens: [],
     subtotal: 0,
     entrega: 0,
@@ -37,7 +37,8 @@ export class RastreamentoComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private firestore: Firestore
+    private firestore: Firestore,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -58,14 +59,15 @@ export class RastreamentoComponent implements OnInit, OnDestroy {
   }
 
   private escutarPedido(id: string) {
+    console.log('📡 [Rastreamento] Iniciando escuta do pedido:', id);
     const docRef = doc(this.firestore, `pedidos/${id}`);
     
-    // Usamos onSnapshot para atualizações em tempo real (ex: quando o status mudar)
     this.unsubscribePedido = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        console.log('Dados do pedido recebidos:', data);
+        console.log('📦 [Rastreamento] Dados recebidos:', data);
 
+        // Mapeamento dinâmico dos campos do Firestore para a tela
         this.pedido = {
           id: id,
           tempoEstimado: data['tempoEstimado'] || 35,
@@ -82,9 +84,12 @@ export class RastreamentoComponent implements OnInit, OnDestroy {
         };
 
         this.atualizarEtapas(data['status']);
+        this.cdr.detectChanges(); // Força atualização da UI
       } else {
-        console.warn('Pedido não encontrado no Firestore');
+        console.error('❌ [Rastreamento] Pedido não encontrado no banco.');
       }
+    }, (error) => {
+      console.error('❌ [Rastreamento] Erro ao carregar pedido:', error);
     });
   }
 
@@ -94,8 +99,8 @@ export class RastreamentoComponent implements OnInit, OnDestroy {
     // Reseta as etapas
     this.etapas.forEach(e => e.concluido = false);
 
-    // Lógica simples de progressão baseada no status
-    this.etapas[0].concluido = true; // Pedido recebido sempre true se o doc existe
+    // Lógica de progresso baseada na string de status salva no banco
+    this.etapas[0].concluido = true; // Sempre true se o doc existe
 
     if (statusLower.includes('confirmado') || statusLower.includes('pago')) {
       this.etapas[1].concluido = true;
