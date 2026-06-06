@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, addDoc, doc, getDoc } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
+import { CarrinhoService } from './carrinho.service';
 import { FirebaseService } from './firebase.service'; 
 
 @Injectable({
@@ -19,16 +20,28 @@ export class PedidoService {
   constructor(
     private firestore: Firestore, 
     private auth: Auth,
-    private firebaseService: FirebaseService 
+    private firebaseService: FirebaseService,
+    private carrinhoService: CarrinhoService
   ) {}
 
   // 🆕 FUNÇÃO PARA O SEU CARRINHO INJETAR OS PRODUTOS REAIS
   setItensCarrinho(itens: any[], taxa: number = 8.90) {
-    this.itensCarrinho = itens.map(item => ({
-      nome: item.nome || item.product?.name || 'Item do Carrinho',
-      quantidade: item.quantidade || item.quantity || 1,
-      precoUnitario: item.precoUnitario || item.product?.price || item.price || 0
-    }));
+    this.itensCarrinho = itens.map(item => {
+      // Calcula o preço unitário real (base + extras)
+      let precoBase = Number(item.product?.price || item.precoUnitario || item.price || 0);
+      let valorExtras = 0;
+      if (item.extras) {
+        item.extras.forEach((e: any) => valorExtras += Number(e.price || 0));
+      }
+      
+      return {
+        nome: item.product?.name || item.nome || 'Item do Carrinho',
+        quantidade: item.quantity || item.quantidade || 1,
+        precoUnitario: precoBase + valorExtras,
+        extras: item.extras || [],
+        observacao: item.observation || ''
+      };
+    });
     this.taxaEntrega = taxa;
     console.log('🛒 Itens sincronizados com sucesso no PedidoService:', this.itensCarrinho);
   }
@@ -53,11 +66,9 @@ export class PedidoService {
     if (!usuario) return this.enderecoSelecionadoAtual;
 
     try {
-      const userDocRef = doc(this.firestore, `usuarios/${usuario.uid}`);
-      const userDoc = await getDoc(userDocRef);
-      if (userDoc.exists() && userDoc.data()['endereco']) {
-        // Sincroniza o endereço interno com o do banco para o envio do pedido
-        this.enderecoSelecionadoAtual = userDoc.data()['endereco'];
+      const perfil: any = await this.firebaseService.buscarPerfilUsuario(usuario.uid);
+      if (perfil && perfil['endereco']) {
+        this.enderecoSelecionadoAtual = perfil['endereco'];
         return this.enderecoSelecionadoAtual;
       }
     } catch (e) {
@@ -66,33 +77,55 @@ export class PedidoService {
     return this.enderecoSelecionadoAtual;
   }
 
-  // 🍔 SALVAMENTO OFICIAL COM DADOS REAIS
-  async salvarPedidoNoFirestore(dadosPagamento: any): Promise<string> {
-    const usuario = this.auth.currentUser || this.firebaseService.getCurrentUser();
-    
-    const uidFinal = usuario ? usuario.uid : 'anonimo';
-    const nomeFinal = usuario ? (usuario.displayName || usuario.email?.split('@')[0]) : 'Cliente Anônimo';
+async salvarPedidoNoFirestore(dadosPagamento: any): Promise<string> {
+  const usuario = this.auth.currentUser || this.firebaseService.getCurrentUser();
+  
+  const uidFinal = usuario ? usuario.uid : 'anonimo';
+  const emailFinal = usuario ? (usuario.email || '') : '';
+  
+  // Tenta buscar o nome real no Firestore, senão usa displayName ou e-mail
+  let nomeFinal = 'Cliente Anônimo';
+  let telefoneFinal = '';
 
-    const novoPedido = {
-      uidUsuario: uidFinal, 
-      nomeUsuario: nomeFinal,
-      enderecoEntrega: this.enderecoSelecionadoAtual,
-      itens: this.itensCarrinho, // Grava a lista real (Ex: X-Burger)
-      pagamento: dadosPagamento,
-      observacao: this.observacoesPedido,
-      valores: {
-        subtotal: this.subtotal,
-        taxaEntrega: this.taxaEntrega,
-        total: this.total
-      },
-      status: 'Pedido confirmed',
-      dataCriacao: new Date() 
-    };
-
-    console.log('🚀 Gravando pedido real no Firestore para o UID:', uidFinal, novoPedido);
-
-    const pedidosRef = collection(this.firestore, 'pedidos');
-    const docRef = await addDoc(pedidosRef, novoPedido);
-    return docRef.id; 
+  if (usuario) {
+    const perfil: any = await this.firebaseService.buscarPerfilUsuario(usuario.uid);
+    if (perfil) {
+      nomeFinal = perfil['nome'] || usuario.displayName || emailFinal.split('@')[0];
+      telefoneFinal = perfil['telefone'] || '';
+    } else {
+      nomeFinal = usuario.displayName || emailFinal.split('@')[0];
+    }
   }
+
+  // Montamos o documento completo que vai pro Firebase
+  const novoPedido = {
+    uidUsuario: uidFinal, 
+    nomeUsuario: nomeFinal,
+    emailUsuario: emailFinal,
+    telefoneUsuario: telefoneFinal,
+    enderecoEntrega: this.enderecoSelecionadoAtual,
+    itens: this.itensCarrinho, 
+    pagamento: dadosPagamento,
+    observacao: this.observacoesPedido,
+    valores: {
+      subtotal: this.subtotal,
+      taxaEntrega: this.taxaEntrega,
+      total: this.total
+    },
+    status: 'Pedido confirmado',
+    dataCriacao: new Date() 
+  };
+
+  console.log('🚀 Gravando pedido unificado no Firestore...', novoPedido);
+
+  // 1. Grava no banco usando a estrutura do AngularFire
+  const ref = collection(this.firestore, 'pedidos');
+  const docRef = await addDoc(ref, novoPedido);
+
+  // 2. CRUCIAL: Limpa o carrinho para a próxima compra!
+  this.carrinhoService.limparCarrinho();
+  this.itensCarrinho = []; 
+
+  return docRef.id; // Retorna o ID gerado pelo Firebase
+}
 }

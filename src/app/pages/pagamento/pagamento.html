@@ -62,7 +62,7 @@
       <span>QR Code PIX</span>
     </div>
     <p class="pix-instructions">Escaneie o QR Code para pagar</p>
-    <div class="pix-price">R$ 133,60</div>
+    <div class="pix-price">R$ {{ pedidoService.total | number:'1.2-2' }}</div>
   </div>
 
   <div class="card dynamic-section-card" *ngIf="metodoSelecionado === 'dinheiro'">
@@ -77,7 +77,7 @@
     <div class="footer-inner">
       <div class="total-row">
         <span class="total-label">Total a pagar</span>
-        <span class="total-price">R$ 133,60</span>
+        <span class="total-price">R$ {{ pedidoService.total | number:'1.2-2' }}</span>
       </div>
       <button type="button" (click)="confirmarPagamento()">Confirmar pagamento</button>
     </div>

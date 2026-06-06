@@ -60,47 +60,62 @@ export class MinhaContaComponent implements OnInit, OnDestroy {
 
   // 🔐 1. ESCUTA SE O USUÁRIO ESTÁ LOGADO (REATIVO)
   escutarEstadoDoLogin() {
-    // O authState fica vigiando o Firebase. Quando os "..." sumirem e o login for validado, ele dispara!
+    console.log('🔄 [Minha Conta] Iniciando escuta do estado de login...');
     this.authSubscription = authState(this.auth).subscribe({
-      next: (user) => {
+      next: async (user) => {
         if (user) {
-          console.log('✅ [Minha Conta] Usuário detectado pelo AuthState:', user.uid);
+          console.log('✅ [Minha Conta] Usuário detectado:', user.uid, user.email);
           
-          // Atualiza o e-mail na tela tirando os "..."
           this.usuario.email = user.email || 'Sem e-mail';
           
-          // Tenta pegar o nome salvo no LocalStorage ou usa o displayName do Firebase
-          const dadosLocais = localStorage.getItem('usuario');
-          this.usuario.nome = dadosLocais ? JSON.parse(dadosLocais).nome : (user.displayName || 'Cliente');
+          try {
+            // Busca perfil no Firestore para garantir dados reais
+            const perfil: any = await this.firebaseService.buscarPerfilUsuario(user.uid);
+            console.log('👤 [Minha Conta] Perfil retornado do Firestore:', perfil);
+            
+            if (perfil) {
+              // ATUALIZAÇÃO COMPLETA: Nome e e-mail vindos do banco
+              this.usuario = {
+                nome: perfil['nome'] || user.displayName || 'Cliente',
+                email: perfil['email'] || user.email || 'Sem e-mail'
+              };
+              
+              if (perfil['endereco']) {
+                this.endereco = perfil['endereco'];
+              }
+              console.log('✅ [Minha Conta] Dados do usuário atualizados:', this.usuario);
+            } else {
+              console.warn('⚠️ [Minha Conta] Perfil não encontrado no Firestore para o UID:', user.uid);
+              // Fallback se não existir documento no Firestore
+              this.usuario = {
+                nome: user.displayName || 'Cliente',
+                email: user.email || 'Sem e-mail'
+              };
+            }
+          } catch (e) {
+            console.error('❌ [Minha Conta] Erro ao buscar perfil:', e);
+          }
 
-          // Agora que temos o UID real com certeza absoluta, buscamos os pedidos dele!
           this.buscarPedidosDoBanco(user.uid);
         } else {
-          console.warn('⚠️ [Minha Conta] Nenhum usuário logado no Firebase.');
-          this.usuario.email = 'deslogado@darkburger.com';
-          this.buscarPedidosDoBanco('anonimo');
+          console.warn('⚠️ [Minha Conta] Nenhum usuário logado no Firebase Auth.');
+          this.usuario.email = 'Desconectado';
+          this.usuario.nome = 'Visitante';
+          this.pedidos = [];
         }
       },
-      error: (err) => console.error('Erro ao checar estado do login:', err)
+      error: (err) => console.error('❌ [Minha Conta] Erro no AuthState:', err)
     });
   }
 
-  // 🍔 2. BUSCA OS PEDIDOS USANDO O ID CORRETO VINDOR DO AUTHSTATE
+  // 🍔 2. BUSCA OS PEDIDOS USANDO O SERVIÇO CENTRALIZADO
   private buscarPedidosDoBanco(uid: string) {
     console.log('🔎 [Minha Conta] Buscando pedidos no Firestore para o UID:', uid);
 
-    const ref = collection(this.firestore, 'pedidos');
-    
-    // Consulta filtrando direto no banco pelo ID do usuário logado
-    const q = query(
-      ref, 
-      where('uidUsuario', '==', uid), 
-      orderBy('dataCriacao', 'desc')
-    );
-
     if (this.pedidosSubscription) this.pedidosSubscription.unsubscribe();
 
-    this.pedidosSubscription = collectionData(q, { idField: 'id' }).subscribe({
+    // Usando o método centralizado do FirebaseService para garantir que a query seja a mesma
+    this.pedidosSubscription = this.firebaseService.buscarPedidosUsuario().subscribe({
       next: (dados: any[]) => {
         console.log('📦 [Minha Conta] Pedidos recebidos do Firestore:', dados);
 
@@ -117,9 +132,13 @@ export class MinhaContaComponent implements OnInit, OnDestroy {
             }
           }
 
+          const statusRaw = pedido.status || 'Pedido confirmado';
+          const isEntregue = statusRaw.toLowerCase().includes('entregue');
+
           return {
             id: pedido.id,
-            status: pedido.status || 'Pedido confirmado',
+            status: statusRaw,
+            estaEmAndamento: !isEntregue,
             data: dataFormatada,
             total: pedido.valores?.total ? Number(pedido.valores.total) : (pedido.total ? Number(pedido.total) : 0),
             totalItens: pedido.itens ? pedido.itens.length : (pedido.totalItens ? Number(pedido.totalItens) : 1)
@@ -127,16 +146,43 @@ export class MinhaContaComponent implements OnInit, OnDestroy {
         });
       },
       error: (err) => {
-        console.error('❌ Erro ao listar pedidos do Firebase:', err);
+        console.error('❌ [Minha Conta] Erro ao listar pedidos do Firebase:', err);
       }
     });
   }
 
   // --- MODAIS ---
   abrirModalDados() { this.tempUsuario = { ...this.usuario }; this.showModalDados = true; }
-  salvarDadosPessoais() { if (!this.tempUsuario.nome.trim()) return; this.usuario.nome = this.tempUsuario.nome; localStorage.setItem('usuario', JSON.stringify({ nome: this.usuario.nome })); this.showModalDados = false; }
+  
+  async salvarDadosPessoais() { 
+    if (!this.tempUsuario.nome.trim()) return; 
+    
+    this.usuario.nome = this.tempUsuario.nome; 
+    
+    const user = this.auth.currentUser;
+    if (user) {
+      await this.firebaseService.salvarPerfilUsuario(user.uid, { nome: this.usuario.nome });
+    }
+    
+    localStorage.setItem('usuario', JSON.stringify({ nome: this.usuario.nome })); 
+    this.showModalDados = false; 
+  }
+
   abrirModalEndereco() { this.tempEndereco = { ...this.endereco }; this.showModalEndereco = true; }
-  salvarEndereco() { if (!this.tempEndereco.rua.trim() || !this.tempEndereco.numero.trim()) return; this.endereco = { ...this.tempEndereco }; localStorage.setItem('endereco_entrega', JSON.stringify(this.endereco)); this.showModalEndereco = false; }
+  
+  async salvarEndereco() { 
+    if (!this.tempEndereco.rua.trim() || !this.tempEndereco.numero.trim()) return; 
+    
+    this.endereco = { ...this.tempEndereco }; 
+    
+    const user = this.auth.currentUser;
+    if (user) {
+      await this.firebaseService.salvarPerfilUsuario(user.uid, { endereco: this.endereco });
+    }
+
+    localStorage.setItem('endereco_entrega', JSON.stringify(this.endereco)); 
+    this.showModalEndereco = false; 
+  }
   
   irParaRastreamento(pedido: any) { 
     this.router.navigate(['/rastreamento', pedido.id]); 

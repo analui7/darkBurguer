@@ -1,23 +1,26 @@
 import { Injectable } from '@angular/core';
 import { 
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail
-} from 'firebase/auth';
+  Auth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  sendPasswordResetEmail,
+  authState
+} from '@angular/fire/auth';
 
-import { 
+import {
   Firestore,
   collection,
   collectionData,
-  addDoc,        
-  query,         
-  where,         
-  orderBy        
+  addDoc,
+  query,
+  where,
+  orderBy,
+  doc,
+  getDoc,
+  setDoc
 } from '@angular/fire/firestore';
 
-import { firebaseApp } from '../firebase';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -25,9 +28,10 @@ import { Observable } from 'rxjs';
 })
 export class FirebaseService {
 
-  private auth = getAuth(firebaseApp);
-
-  constructor(private firestore: Firestore) {}
+  constructor(
+    private firestore: Firestore,
+    private auth: Auth
+  ) {}
 
   // 🔐 LOGIN
   login(email: string, password: string) {
@@ -60,26 +64,32 @@ export class FirebaseService {
     return collectionData(ref, { idField: 'id' });
   }
 
-  // 📦 SALVAR PEDIDO (FIRESTORE)
-  salvarPedido(pedido: any) {
-    const user = this.getCurrentUser();
-    
-    const dadosPedido = {
-      ...pedido,
-      uidUsuario: user ? user.uid : 'anonimo', // Sincronizado com uidUsuario do seu PedidoService
-      dataCriacao: new Date(),                // Sincronizado com dataCriacao do seu PedidoService
-      status: 'Pedido confirmado'
-    };
-
-    const ref = collection(this.firestore, 'pedidos');
-    return addDoc(ref, dadosPedido); 
+  // 👤 PERFIL DO USUÁRIO
+  async salvarPerfilUsuario(uid: string, dados: any) {
+    console.log('💾 [FirebaseService] Salvando perfil para UID:', uid, dados);
+    const userDocRef = doc(this.firestore, `usuarios/${uid}`);
+    return setDoc(userDocRef, dados, { merge: true });
   }
 
-  // 📜 BUSCAR PEDIDOS DO USUÁRIO LOGADO (CORRIGIDO PARA MAPEAR SUA JORNADA DE COMPRA)
-getPedidos(): Observable<any[]> {
+  async buscarPerfilUsuario(uid: string) {
+    console.log('🔍 [FirebaseService] Buscando perfil para UID:', uid);
+    const userDocRef = doc(this.firestore, `usuarios/${uid}`);
+    const docSnap = await getDoc(userDocRef);
+    return docSnap.exists() ? docSnap.data() : null;
+  }
+
+  // 📜 BUSCAR PEDIDOS DO USUÁRIO LOGADO
+  buscarPedidosUsuario(): Observable<any[]> {
+    const user = this.getCurrentUser();
+    const uid = user ? user.uid : 'anonimo';
+
     const ref = collection(this.firestore, 'pedidos');
-    // Remove o filtro 'where' temporariamente para testar se puxa tudo
-    const q = query(ref, orderBy('dataCriacao', 'desc')); 
+    const q = query(
+      ref, 
+      where('uidUsuario', '==', uid),
+      orderBy('dataCriacao', 'desc')
+    );
+
     return collectionData(q, { idField: 'id' }) as Observable<any[]>;
   }
 }

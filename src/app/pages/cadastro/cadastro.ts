@@ -40,9 +40,16 @@ export class CadastroComponent {
     }
 
     this.firebaseService.register(this.email, this.senha)
-      .then(() => {
+      .then(async (cred) => {
+        if (cred.user) {
+          await this.firebaseService.salvarPerfilUsuario(cred.user.uid, {
+            nome: this.nome,
+            email: this.email,
+            dataCadastro: new Date()
+          });
+        }
         alert('Conta criada com sucesso!');
-        this.router.navigate(['/']);
+        this.router.navigate(['/inicio']);
       })
       .catch((error) => {
         console.error(error);

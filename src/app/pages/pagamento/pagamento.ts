@@ -42,20 +42,12 @@ export class PagamentoComponent {
           this.metodoSelecionado === 'dinheiro' ? this.dadosDinheiro : null
       };
 
-      // Salva no Firestore de verdade e pega o ID gerado
-      const idDoDocumento = await this.pedidoService.salvarPedidoNoFirestore(infoPagamento);
+      // Apenas salva a escolha no serviço e segue para a revisão final
+      this.pedidoService.setPagamento(infoPagamento);
 
-      // Redireciona para a tela de sucesso levando os dados reais
-      this.router.navigate(['/finalizar-pedido'], {
-        state: {
-          idPedido: idDoDocumento,
-          endereco: this.pedidoService.getEndereco(),
-          pagamento: infoPagamento
-        }
-      });
+      this.router.navigate(['/finalizar-pedido']);
 
     } catch (error: any) {
-      alert('Erro ao processar pedido no Firebase: ' + error.message);
       console.error(error);
     }
   }

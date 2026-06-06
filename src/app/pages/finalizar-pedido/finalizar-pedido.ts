@@ -22,6 +22,7 @@ export class FinalizarPedidoComponent implements OnInit {
   itensPedido: any[] = [];
   subtotal: number = 0;
   taxaEntrega: number = 0;
+  pagamento: any = { metodo: 'Não selecionado' };
 
   constructor(
     private pedidoService: PedidoService, // Seu serviço que gerencia os pedidos e Firestore
@@ -36,6 +37,13 @@ async ngOnInit() {
     this.itensPedido = this.pedidoService.itensCarrinho;
     this.subtotal = this.pedidoService.subtotal;
     this.taxaEntrega = this.pedidoService.taxaEntrega;
+    this.pagamento = this.pedidoService.getPagamento() || { metodo: 'Não selecionado' };
+
+    // Se não houver itens ou pagamento, talvez o usuário tenha vindo direto.
+    if (this.itensPedido.length === 0) {
+      this.router.navigate(['/inicio']);
+      return;
+    }
 
     try {
       // 2. Aguarda a resposta do endereço vinda do Firestore
@@ -66,6 +74,16 @@ async ngOnInit() {
     }
 
     console.log('✅ Checkout pronto! Objeto endereço definido:', this.endereco);
+  }
+
+  // Atalho para formatar o nome do método de pagamento
+  get formaPagamentoTexto(): string {
+    const metodos: any = {
+      'pix': 'Pix',
+      'credito': 'Cartão de Crédito',
+      'dinheiro': 'Dinheiro'
+    };
+    return metodos[this.pagamento.metodo] || 'Não selecionado';
   }
 
   // Atalho para calcular o total diretamente na View se necessário
@@ -99,14 +117,17 @@ async ngOnInit() {
     // Sincroniza a observação digitada na tela com o seu PedidoService antes de salvar
     this.pedidoService.observacoesPedido = this.observacoesPedido;
 
-    // Pegamos os dados de pagamento (pode ser um objeto mockado ou o que o usuário escolheu)
-    const dadosPagamento = this.pedidoService.getPagamento() || { forma: 'Cartão de Crédito na Entrega' };
+    if (!this.pagamento || this.pagamento.metodo === 'Não selecionado') {
+      alert('Por favor, selecione uma forma de pagamento.');
+      this.router.navigate(['/pagamento']);
+      return;
+    }
 
     console.log('Enviando e registrando pedido no Firebase Firestore...');
 
     try {
       // 1. Chama a função real do seu PedidoService que salva no Firebase e retorna o ID string
-      const idPedidoFirebase = await this.pedidoService.salvarPedidoNoFirestore(dadosPagamento);
+      const idPedidoFirebase = await this.pedidoService.salvarPedidoNoFirestore(this.pagamento);
       
       console.log('✅ Pedido gravado no banco de dados com Sucesso! ID:', idPedidoFirebase);
       

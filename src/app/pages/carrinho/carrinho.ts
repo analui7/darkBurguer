@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CarrinhoService } from '../../services/carrinho.service';
+import { PedidoService } from '../../services/pedido.service';
 
 @Component({
   selector: 'app-carrinho',
@@ -16,6 +17,7 @@ export class CarrinhoComponent implements OnInit {
 
  constructor(
   private carrinhoService: CarrinhoService,
+  private pedidoService: PedidoService,
   private router: Router
 ) {}
 
@@ -69,19 +71,22 @@ diminuirQuantidade(index: number) {
 
 recalcularItem(index: number) {
 
-  const item = this.itens[index];
+const item = this.itens[index];
 
-  let valorUnitario = Number(item.product.price);
+let valorUnitario = Number(item.product.price);
 
-  item.extras?.forEach((extra: any) => {
-    valorUnitario += Number(extra.price);
-  });
+item.extras?.forEach((extra: any) => {
+  valorUnitario += Number(extra.price);
+});
 
-  item.total = valorUnitario * item.quantity;
+item.total = valorUnitario * item.quantity;
+
+// Atualiza no localStorage também
+localStorage.setItem('carrinho', JSON.stringify(this.itens));
 }
+
 irParaPagamento() {
-
-  this.router.navigate(['/pagamento']);
-
+this.pedidoService.setItensCarrinho(this.itens);
+this.router.navigate(['/pagamento']);
 }
 }
